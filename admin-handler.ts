@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFile } from "node:child_process";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 // The admin API, shared by the Vite dev server (admin-api.ts) and the desktop app (electron/main.ts).
@@ -8,6 +9,32 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 const MAX_UPLOAD = 40 * 1024 * 1024;
 const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg"]);
 const FONT_EXT = new Set([".ttf", ".otf", ".woff", ".woff2"]);
+
+// ---- publishing: commit the project's changes and push them to GitHub (which rebuilds the website) -------------------
+
+const GIT_PATHS = ["git", "C:\\Program Files\\Git\\cmd\\git.exe", "C:\\Program Files (x86)\\Git\\cmd\\git.exe"];
+
+// Runs git in the project folder. Tries the normal `git` first, then the usual Windows install folders (an app started
+// from Explorer may not have seen the PATH change made when Git was installed).
+async function git(root: string, args: string[], timeout = 5 * 60 * 1000): Promise<string> {
+  for (const bin of GIT_PATHS) {
+    try {
+      return await new Promise<string>((resolve, reject) =>
+        execFile(
+          bin,
+          args,
+          { cwd: root, windowsHide: true, timeout, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } },
+          (err, stdout, stderr) => (err ? reject(Object.assign(err, { stderr: String(stderr) })) : resolve(String(stdout))),
+        ),
+      );
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") continue; // this git is not here: try the next place
+      const err = e as Error & { stderr?: string };
+      throw new Error((err.stderr || err.message).trim().split("\n").slice(-4).join(" ").slice(0, 400));
+    }
+  }
+  throw new Error("Git is not installed on this computer.");
+}
 
 function readBody(req: IncomingMessage, limit: number): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -106,6 +133,32 @@ export async function handleAdminApi(
       const target = path.join(m[1] === "work" ? uploadDir : fontDir, m[2]);
       if (fs.existsSync(target)) fs.unlinkSync(target);
       send(res, 200, { ok: true });
+      return true;
+    }
+
+    // How much is waiting to be published: files changed since the last commit, plus commits not pushed yet.
+    if (route === "/publish/status" && req.method === "GET") {
+      try {
+        await git(root, ["rev-parse", "--is-inside-work-tree"], 20000);
+      } catch (e) {
+        send(res, 200, { git: false, reason: e instanceof Error ? e.message : "No git." });
+        return true;
+      }
+      const changes = (await git(root, ["status", "--porcelain"], 60000)).split("\n").filter(Boolean).length;
+      const ahead = parseInt(await git(root, ["rev-list", "--count", "@{u}..HEAD"], 20000).catch(() => "0"), 10) || 0;
+      send(res, 200, { git: true, changes, ahead });
+      return true;
+    }
+
+    if (route === "/publish" && req.method === "POST") {
+      await git(root, ["rev-parse", "--is-inside-work-tree"], 20000).catch(() => {
+        throw new Error("This project folder is not connected to GitHub yet.");
+      });
+      await git(root, ["add", "-A"], 120000);
+      const changed = (await git(root, ["status", "--porcelain"], 60000)).trim().length > 0;
+      if (changed) await git(root, ["commit", "-m", "Update site content"], 120000);
+      await git(root, ["push"]);
+      send(res, 200, { ok: true, committed: changed });
       return true;
     }
   } catch (err) {

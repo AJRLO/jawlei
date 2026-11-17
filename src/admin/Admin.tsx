@@ -560,6 +560,8 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [project, setProject] = useState("");
   const [working, setWorking] = useState<"preview" | "build" | null>(null);
+  const [pending, setPending] = useState<number | null>(null); // changes not on the live site yet (null: no GitHub connection)
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     void desktop?.getProject().then(setProject);
@@ -618,8 +620,8 @@ export default function Admin() {
 
   const onError = useCallback((text: string) => setMsg({ kind: "err", text }), []);
 
-  const save = async () => {
-    if (!data || !saved) return;
+  const save = async (): Promise<boolean> => {
+    if (!data || !saved) return false;
     setSaving(true);
     try {
       await api("/content", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
@@ -628,10 +630,38 @@ export default function Admin() {
       for (const old of imagesIn(saved)) if (!keep.has(old)) await api(`/upload?path=${encodeURIComponent(old)}`, { method: "DELETE" }).catch(() => undefined);
       setSaved(structuredClone(data));
       setMsg({ kind: "ok", text: "Saved. The site is updated." });
+      setSaving(false);
+      void refreshPending();
+      return true;
     } catch (e) {
       setMsg({ kind: "err", text: e instanceof Error ? e.message : "Save failed." });
     }
     setSaving(false);
+    return false;
+  };
+
+  // Publishing: commits the changes in the project folder and pushes them to GitHub, which rebuilds the live website.
+  const refreshPending = useCallback(() => {
+    return api("/publish/status")
+      .then((s: { git: boolean; changes?: number; ahead?: number }) => setPending(s.git ? (s.changes ?? 0) + (s.ahead ?? 0) : null))
+      .catch(() => setPending(null));
+  }, []);
+  useEffect(() => {
+    void refreshPending();
+  }, [refreshPending]);
+
+  const publish = async () => {
+    if (dirty && !(await save())) return;
+    setPublishing(true);
+    setMsg({ kind: "ok", text: "Publishing…" });
+    try {
+      await api("/publish", { method: "POST" });
+      setMsg({ kind: "ok", text: "Published. The live site updates in a minute or two." });
+    } catch (e) {
+      setMsg({ kind: "err", text: e instanceof Error ? e.message : "Publishing failed." });
+    }
+    setPublishing(false);
+    void refreshPending();
   };
 
   const discard = () => {
@@ -666,6 +696,15 @@ export default function Admin() {
           <a className="a-btn small" href="/" target="_blank" rel="noreferrer">View site</a>
         )}
         <button type="button" className="a-btn small" onClick={discard} disabled={!dirty || saving}>Discard</button>
+        <button
+          type="button"
+          className="a-btn small"
+          title={pending === null ? "This project folder is not connected to GitHub" : "Send your changes to the live website (jawlei.art)"}
+          onClick={() => void publish()}
+          disabled={publishing || saving || pending === null || (!dirty && pending === 0)}
+        >
+          {publishing ? "Publishing…" : pending ? `Publish site (${pending})` : "Publish site"}
+        </button>
         <button type="button" className="a-btn primary" onClick={() => void save()} disabled={!dirty || saving}>
           {saving ? "Saving…" : "Save"}
         </button>
