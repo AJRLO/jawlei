@@ -157,6 +157,13 @@ export async function handleAdminApi(
       await git(root, ["add", "-A"], 120000);
       const changed = (await git(root, ["status", "--porcelain"], 60000)).trim().length > 0;
       if (changed) await git(root, ["commit", "-m", "Update site content"], 120000);
+      // someone else (your mate) may have published since this copy was last updated: bring their changes in first
+      try {
+        await git(root, ["pull", "--rebase", "--autostash"], 3 * 60 * 1000);
+      } catch (e) {
+        await git(root, ["rebase", "--abort"], 30000).catch(() => undefined); // leave the project as it was
+        throw new Error(`Could not combine your changes with the ones already published (${e instanceof Error ? e.message : "conflict"}). Ask the other person to publish first, then reopen the admin and try again.`);
+      }
       await git(root, ["push"]);
       send(res, 200, { ok: true, committed: changed });
       return true;
