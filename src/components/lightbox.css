@@ -1,0 +1,34 @@
+.lb {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: transparent; /* everything, white page included, is drawn on the canvas through the liquid mask */
+  cursor: zoom-out;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  color: #000;
+}
+
+.lb-bg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+
+/* buttons simply appear once the picture is on screen */
+.lb-ui { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.lb.show .lb-ui { opacity: 1; }
+
+.lb-btn {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+.lb.show .lb-btn { pointer-events: auto; }
+.lb-btn:hover { background: #000; color: #fff; }
+.lb-prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 18px; top: 50%; transform: translateY(-50%); }
+.lb-count { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); font-size: 14px; letter-spacing: 0.1em; }

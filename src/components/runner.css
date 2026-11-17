@@ -1,0 +1,5 @@
+﻿/* the running figure used by the page-change animation: white, pixelated (painted in RunnerMark.tsx), in the middle of the screen */
+.runner { position: absolute; left: 50%; top: 50%; width: 12.5vw; height: auto; margin: -4.92vw 0 0 -6.25vw; image-rendering: pixelated; pointer-events: none; }
+@media (max-aspect-ratio: 1/1) {
+  .runner { width: 34vw; margin: -13.4vw 0 0 -17vw; }
+}

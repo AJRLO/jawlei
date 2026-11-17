@@ -1,0 +1,1144 @@
+:root {
+  --red: #8a0e40;
+  --blue: #0e3a8a;
+  --blue-bright: #1f5cff; /* lighter tints of the brand blue/red, for the glows */
+  --blue-soft: #6fa0ff;
+  --red-bright: #e01466;
+  --red-soft: #ff6fa8;
+  --text: #1a1a1f;
+  --bg: #fdfcfd;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* Fixed background: top glow, bottom glow, grain on top */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+.bg-glow {
+  position: absolute;
+  left: -30%;
+  width: 160%;
+  height: 58%;
+  filter: blur(2vw);
+  will-change: transform, opacity;
+}
+
+/* Solid brand-color core, then brighter tints of the same hue so the glow reads as vivid color */
+.bg-glow-top {
+  animation: drift-top 14s ease-in-out infinite;
+  top: -16%;
+  background: radial-gradient(
+    ellipse 70% 75% at 50% 30%,
+    var(--blue) 0%,
+    color-mix(in srgb, var(--blue-bright) 80%, transparent) 24%,
+    color-mix(in srgb, var(--blue-bright) 42%, transparent) 44%,
+    color-mix(in srgb, var(--blue-soft) 16%, transparent) 64%,
+    transparent 84%
+  );
+}
+
+.bg-glow-bottom {
+  animation: drift-bottom 17s ease-in-out infinite;
+  bottom: -16%;
+  background: radial-gradient(
+    ellipse 70% 75% at 50% 70%,
+    var(--red) 0%,
+    color-mix(in srgb, var(--red-bright) 80%, transparent) 24%,
+    color-mix(in srgb, var(--red-bright) 42%, transparent) 44%,
+    color-mix(in srgb, var(--red-soft) 16%, transparent) 64%,
+    transparent 84%
+  );
+}
+
+/* Grain is full strength at the top/bottom glows and thins out toward the center */
+.bg-noise-mask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, rgba(0, 0, 0, 0.12) 46%, rgba(0, 0, 0, 0.12) 54%, #000 82%, #000 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 18%, rgba(0, 0, 0, 0.12) 46%, rgba(0, 0, 0, 0.12) 54%, #000 82%, #000 100%);
+}
+
+.bg-noise {
+  position: absolute;
+  inset: -50%;
+  opacity: 0.4;
+  animation: grain 0.6s steps(1) infinite;
+  /* tile is sized in device pixels (--dpr), so grain looks the same at any browser zoom */
+  background-size: calc(200px / var(--dpr, 1)) calc(200px / var(--dpr, 1));
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.6 0 0 0 -0.55'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Scroll story: a tall track with a sticky one-screen stage inside it */
+.scroll-track { height: 450vh; }
+
+.stage {
+  --hero: 0;
+  --enter: 0;
+  --spin: -50;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hero {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1vw;
+}
+
+/* logo PNG is transparent, so blobs behind it don't tint it */
+.hero-logo {
+  width: 42vw; /* vw only, so browser zoom doesn't change its size on screen */
+  height: auto;
+  opacity: calc(1 - var(--hero));
+  transform: translateY(calc(var(--hero) * -12vh)) scale(calc(1 - var(--hero) * 0.4));
+  will-change: transform, opacity;
+}
+
+/* Cards sit on a big circle whose centre is below the screen; --spin rotates the whole circle */
+.cards {
+  --u: min(1vw, 1.4vh);
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+
+.ring {
+  position: absolute;
+  left: 0;
+  top: calc(54vh + var(--u) * 52);
+  transform: translateY(calc((1 - var(--enter)) * 80vh)) rotate(calc(var(--spin) * 1deg));
+  will-change: transform;
+}
+
+/* Dashed circle + circular text under the cards; turns faster than the cards for extra motion */
+.ring-text {
+  position: absolute;
+  width: calc(var(--u) * 90);
+  height: calc(var(--u) * 90);
+  left: calc(var(--u) * -45);
+  top: calc(var(--u) * -45);
+  overflow: visible;
+  transform: rotate(calc(var(--spin) * 1.5deg));
+}
+
+.ring-dash {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: 0.4;
+  stroke-width: 0.25;
+  stroke-dasharray: 1.1 1.1;
+}
+
+.ring-label {
+  fill: #000;
+  fill-opacity: 0.55;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 2.6px;
+  letter-spacing: 0.1em;
+}
+
+.card {
+  position: absolute;
+  width: calc(var(--u) * 14);
+  height: calc(var(--u) * 19);
+  left: calc(var(--u) * -7);
+  top: calc(var(--u) * -9.5);
+  border-radius: calc(var(--u) * 1.2);
+  overflow: hidden;
+  transform: rotate(calc(var(--a) * 1deg)) translateY(calc(var(--u) * -52));
+  box-shadow: 0 0.8vw 1.8vw rgba(0, 0, 0, 0.2);
+}
+
+.card-art,
+.card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-num {
+  position: absolute;
+  left: 7%;
+  bottom: 5%;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(var(--u) * 1.1);
+  letter-spacing: 0.08em;
+}
+/* White squares that rise over the stage at the end of the scroll (drawn on a 64-column canvas) */
+.stage-pixels {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* About section: sits over the last screen of the scroll story, so it is already in view when the
+   white pixels finish filling the screen. It fades in as they rise. No animation of its own. */
+.about {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  margin-top: -100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7vw 2.5vw 5vw;
+  color: #000;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  opacity: clamp(0, calc((var(--rise, 0) - 0.55) * 3), 1);
+}
+.about-label {
+  margin: 0 0 2vw;
+  font-size: 1.1vw;
+  letter-spacing: 0.16em;
+}
+
+.about-name {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 9.5vw;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+
+/* The section overlaps the last screen of the scroll story (which is already white). If the content
+   is taller than one screen, this white backing keeps the extra part from showing the background. */
+.about::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100vh;
+  bottom: 0;
+  background: transparent;
+  z-index: -1;
+}
+
+.about-bottom {
+  display: flex;
+
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.2vw;
+  margin-top: 2.5vw;
+}
+
+.contact-btn {
+  display: inline-block;
+  padding: 0.65vw 1.4vw;
+  border: 0.12vw solid #000;
+  background: #000;
+  color: #fff;
+  font-size: 0.85vw;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.contact-btn:hover,
+.contact-btn:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.about-text {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3vw;
+  max-width: 68vw;
+  font-size: 1.05vw;
+  font-weight: 500;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+}
+
+.about-text p { margin: 0; }
+
+.about-meta {
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+  margin: 3.5vw 0 0;
+  padding: 1.4vw 0 0;
+  border-top: 0.12vw solid #000;
+  list-style: none;
+  font-size: 1.1vw;
+  letter-spacing: 0.16em;
+}
+.pixel-shapes {
+  position: absolute;
+  inset: 0;
+}
+
+.pixel-blob-wrap {
+  position: absolute;
+  will-change: filter, opacity;
+}
+
+.pixel-blob {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: float 18s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(0.9vw, -1.1vw); }
+}
+
+@keyframes drift-top {
+  0%, 100% { transform: translate(-3%, 0) scale(1); opacity: 0.92; }
+  50%      { transform: translate(3%, 8%) scale(1.08); opacity: 1; }
+}
+
+@keyframes drift-bottom {
+  0%, 100% { transform: translate(3%, 0) scale(1); opacity: 0.92; }
+  50%      { transform: translate(-3%, -8%) scale(1.08); opacity: 1; }
+}
+
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-7%, 5%); }
+  40%  { transform: translate(6%, -8%); }
+  60%  { transform: translate(-4%, -3%); }
+  80%  { transform: translate(8%, 7%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-noise,
+  .bg-glow,
+  .pixel-blob { animation: none; }
+}
+/* Top bar and footer: fixed to the viewport edges, bold black Gotham */
+.site-top,
+.site-footer {
+  position: fixed;
+  z-index: 10; /* above the About section, which has its own white backing */
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 1vw;
+  padding: 1.3vw 2vw;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9vw;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: #000;
+}
+
+.site-top {
+  top: 0;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.site-footer {
+  bottom: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+.site-top p { margin: 0; }
+
+/* Left: tight, heavy name with MADE / 2026 stacked small beside it */
+.top-mark {
+  display: flex;
+  align-items: stretch;
+  gap: 0.9vw;
+}
+
+.top-mark { position: relative; }
+
+.logo-menu { position: relative; display: flex; align-self: center; }
+
+.logo-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.logo-btn:focus-visible { outline: 0.15vw solid #000; outline-offset: 0.4vw; }
+
+/* Full-page liquid menu: a pixelated, wobbling blob swells from the middle of the screen, with big links on it */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 1; /* above the page, below the logo and the top/footer text (z-index 2 below) */
+  display: block;
+  overflow: hidden;
+}
+
+.liquid {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  image-rendering: pixelated; /* each canvas pixel is one big square */
+}
+
+.menu-items {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6vw 6vw 4vw;
+}
+
+.menu-item {
+  display: flex;
+  align-items: baseline;
+  align-self: flex-start;
+  gap: 2vw;
+  padding: 0.3vw 1.4vw;
+  margin-left: -1.4vw;
+  border: 0;
+  background: none;
+  color: #0e3a8a; /* brand blue */
+  font: inherit;
+  font-size: 7.5vw;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(2.5vw);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--it);
+  pointer-events: none;
+}
+
+.menu.show .menu-item {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.menu-item:focus-visible { outline: none; }
+
+/* While hovered, the text morphs into the pixel typeface */
+@font-face {
+  font-family: "NewPixel";
+  src: url("/fonts/pixel-italic-square.otf") format("opentype");
+  font-display: swap;
+}
+
+.menu-label {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.menu-label-text { display: inline-block; }
+
+/* the pixel-font version of the word, melted in on hover */
+.menu-label-alt {
+  position: absolute;
+  left: 0;
+  top: 0.1em; /* this font sits a little higher in its line box, so nudge it onto the same baseline */
+  font-family: "NewPixel", serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+
+.menu-num {
+  font-size: 1.1vw;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.6;
+  transform: translateY(-2.4vw);
+}
+/* Keep the logo and the other top-bar text above the menu */
+.logo-btn { position: relative; z-index: 2; }
+.top-mark-meta,
+.top-tag { position: relative; z-index: 2; }
+
+.logo-btn .top-mark-name { transition: filter 0.2s ease; }
+
+.top-mark-name {
+  display: block;
+  align-self: center;
+  width: 11vw; /* typo logo image, sized in vw like the rest of the text */
+  height: auto;
+}
+
+.top-mark-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-left: 0.9vw;
+  border-left: 0.12vw solid currentColor;
+  font-size: 0.75vw;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+/* Right: the tagline */
+.top-tag {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+.top-slash { opacity: 0.55; }
+
+/* Narrow / portrait windows. Uses aspect ratio, not width in px, so browser zoom can't trigger it.
+   The top bar stays on one row: the text is scaled up just enough to fill the width without wrapping. */
+@media (max-aspect-ratio: 1/1) {
+  .hero-logo { width: 70vw; }
+  .about { padding: 18vw 4vw 14vw; }
+  .about-label { font-size: 2.6vw; }
+  .about-name { font-size: 13vw; }
+  .about-meta { font-size: 2.6vw; gap: 5vw; }
+  .about-bottom { margin-top: 4vw; gap: 5vw; }
+  .about-text { grid-template-columns: 1fr; gap: 3vw; max-width: none; font-size: 3vw; }
+  .contact-btn { padding: 1.8vw 3.4vw; font-size: 2.2vw; border-width: 0.3vw; }
+
+  .cards { --u: min(1.5vw, 1.2vh); }
+
+  .site-top,
+  .site-footer { padding: 3vw 2.5vw; }
+
+  .site-footer { font-size: 2.4vw; }
+
+  .site-top {
+    font-size: 2vw;
+    gap: 1vw;
+  }
+
+  .top-mark { gap: 1.2vw; }
+  .top-mark-name { width: 24vw; }
+  .menu-items { padding: 22vw 8vw 12vw; }
+  .menu-item { font-size: 15vw; gap: 3vw; padding: 1vw 3vw; margin-left: -3vw; }
+  .menu-num { font-size: 2.6vw; transform: translateY(-5vw); }
+  .top-mark-meta { padding-left: 1.2vw; font-size: 1.65vw; border-left-width: 0.25vw; }
+}
+/* Work page: a plain white page of grouped placeholder pieces */
+.work {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  padding: 7vw 2.5vw 6vw;
+  background: transparent; /* the floating pixel shapes of the page background show through */
+  color: #000;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+}
+.work-label { margin: 0 0 2vw; font-size: 1.1vw; letter-spacing: 0.16em; }
+.work-title { margin: 0; font-size: 9.5vw; font-weight: 700; letter-spacing: -0.04em; line-height: 0.92; }
+.work-nav { display: flex; gap: 2.2vw; margin: 2.5vw 0 5vw; font-size: 1.1vw; letter-spacing: 0.08em; }
+.work-nav a { color: inherit; text-decoration: none; }
+.work-nav a:hover { color: var(--blue); }
+.work-nav sup { margin-left: 0.3vw; font-size: 0.7em; opacity: 0.55; }
+.work-group { margin-bottom: 6vw; scroll-margin-top: 5vw; }
+.work-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 2vw; margin-bottom: 1.6vw; padding-bottom: 1vw; border-bottom: 0.15vw solid #000; }
+.work-group-head h2 { margin: 0; font-size: 4vw; letter-spacing: -0.03em; line-height: 1; }
+.work-group-head p { margin: 0; font-size: 1.1vw; letter-spacing: 0.06em; }
+.work-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.2vw; }
+.work-tile { position: relative; margin: 0; aspect-ratio: var(--ratio); }
+.work-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.work-tile figcaption { position: absolute; left: 0.9vw; bottom: 0.7vw; font-size: 1vw; letter-spacing: 0.08em; }
+
+@media (max-aspect-ratio: 1/1) {
+  .work { padding-top: 22vw; }
+  .work-label, .work-nav, .work-group-head p { font-size: 3vw; }
+  .work-title { font-size: 20vw; }
+  .work-nav { gap: 5vw; margin: 5vw 0 10vw; }
+  .work-group-head h2 { font-size: 9vw; }
+  .work-group-head { margin-bottom: 3vw; }
+  .work-grid { grid-template-columns: repeat(min(var(--cols), 2), 1fr); gap: 3vw; }
+  .work-tile figcaption { font-size: 2.6vw; }
+}
+.work-tile figcaption { z-index: 1; }
+
+/* stepped, pixel-style rule under each group heading instead of a smooth line */
+.work-group-head { border-bottom: 0; position: relative; }
+.work-group-head::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 0.6vw;
+  background-image: linear-gradient(90deg, #000 50%, transparent 50%);
+  background-size: 1.2vw 100%;
+}
+@media (max-aspect-ratio: 1/1) {
+  .work-group-head::after { height: 1.6vw; background-size: 3.2vw 100%; }
+}
+.pixel-cover { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; } /* size is set in code, so the squares are exactly square */
+
+.work-title, .work-group-head h2 { position: relative; }
+
+.work-tile.zoomable { cursor: zoom-in; }
+.work-tile.zoomable:focus-visible { outline: none; }
+.work-tile.zoomable:focus-visible::before { background: #0e3a8a; }
+
+
+.work-more { margin-top: 1vw; padding-bottom: 4vw; }
+@media (max-aspect-ratio: 1/1) { .work-more { padding-bottom: 12vw; } }
+
+@font-face {
+  font-family: "Minecraft";
+  src: url("/fonts/minecraft.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* Pixel-art glass button (Behance link): everything is built from whole "pixels" of --u: a dark outline with stepped
+   corners, a pale face, white glints (drawn by PixelButton) and a darker band along the bottom. */
+.pix-btn {
+  --u: 0.2vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  padding: calc(var(--u) * 4) calc(var(--u) * 7) calc(var(--u) * 6); /* 4 + 9 (the text) + 6 pixels tall */
+  background: #15151f; /* the outline */
+  clip-path: var(--notch);
+  color: #55549a;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.08s steps(1);
+}
+/* the face, with its darker band along the bottom (3 pixels) */
+.pix-btn::before {
+  content: "";
+  position: absolute;
+  inset: var(--u);
+  z-index: -2;
+  background: #dedcf6;
+  box-shadow: inset 0 calc(var(--u) * -3) 0 #aeaade;
+  clip-path: var(--notch);
+}
+/* Feels like a real button: hovering lifts it a pixel and brightens the face; pressing pushes it down, squashes the
+   darker band and drops the label, then it springs back. Movements jump in whole pixels, not smoothly. */
+.pix-btn { user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.09s steps(2); }
+.pix-btn::before { transition: background 0.09s steps(2); }
+.pix-btn:hover, .pix-btn:focus-visible { transform: translateY(calc(var(--u) * -1)); }
+.pix-btn:hover::before, .pix-btn:focus-visible::before { background: #f4f3ff; }
+.pix-btn:active { transform: translateY(var(--u)); transition-duration: 0.03s; }
+.pix-btn:active::before { background: #cfcdf0; box-shadow: inset 0 calc(var(--u) * -1) 0 #aeaade; }
+.pix-btn:active .pix-label,
+.pix-btn:active .pix-glints { translate: 0 var(--u); }
+.pix-btn:focus-visible { outline: none; }
+
+/* glints: from the top of the face down to the top of the darker band */
+.pix-glints {
+  position: absolute;
+  z-index: -1;
+  left: var(--u);
+  right: var(--u);
+  top: var(--u);
+  bottom: calc(var(--u) * 4);
+  width: calc(100% - var(--u) * 2);
+  height: calc(100% - var(--u) * 5);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.pix-label {
+  display: block;
+  width: calc(var(--u) * 0.5 * var(--w, 200));
+  height: calc(var(--u) * 9);
+  image-rendering: pixelated;
+  color: #55549a;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .pix-btn { --u: 0.5vw; }
+}
+/* meaningful words in the bio, in the pixel font */
+.px-word { font-family: "Minecraft", monospace; font-weight: 400; font-size: 1.07em; letter-spacing: 0.01em; }
+
+/* the two name lines: each has its own font, colour and size (set from the admin); the second tucks up under the first */
+.about-name span { position: relative; line-height: 0.95; }
+.about-name span:nth-child(2) { margin-top: calc(var(--overlap, 0.35em) * -1); }
+/* Cards share the buttons' pixel build: a dark outline with stepped corners, and a thick periwinkle band along the base.
+   Everything is in whole "pixels" of --u. The picture (or colour) sits in .work-face, above the band. */
+.work-tile {
+  --u: 0.25vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  background: #15151f; /* the outline */
+  clip-path: var(--notch);
+}
+/* the band: fills the inside of the outline; the face covers all of it except the bottom 3 pixels */
+.work-tile::before {
+  content: "";
+  position: absolute;
+  inset: var(--u);
+  background: #aeaade;
+  clip-path: var(--notch);
+}
+.work-face {
+  position: absolute;
+  left: var(--u);
+  right: var(--u);
+  top: var(--u);
+  bottom: calc(var(--u) * 4);
+  overflow: hidden;
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+@media (max-aspect-ratio: 1/1) {
+  .work-tile { --u: 0.7vw; }
+}
+/* card numbers in the supplied italic typeface */
+.work-tile figcaption { font-family: "NewPixel", serif; font-weight: 400; font-size: 1.7vw; letter-spacing: 0.02em; line-height: 1; bottom: 0.8vw; }
+@media (max-aspect-ratio: 1/1) { .work-tile figcaption { font-size: 4.4vw; bottom: 1.8vw; } }
+
+/* The header hides while you scroll down and returns when you scroll up (see App.tsx). `transform: none` when shown, so the
+   fixed menu inside it is not trapped by a transform. */
+.site-top { transition: transform 0.3s ease; }
+.site-top.hide { transform: translateY(-120%); }
+@media (prefers-reduced-motion: reduce) { .site-top { transition: none; } }
+
+/* The copyright sits at the very bottom of the page, after everything else, instead of floating over the content */
+.site-footer {
+  position: relative;
+  bottom: auto;
+  z-index: 2;
+  background: #fff;
+  padding-top: 2.2vw;
+  padding-bottom: 1.8vw;
+}
+@media (max-aspect-ratio: 1/1) {
+  .site-footer { padding-top: 5vw; padding-bottom: 4vw; }
+}
+/* Pressing a card (one with a picture, which opens the viewer) works like pressing a button: it sinks a pixel, the band
+   squashes from 3 pixels to 1 and the face darkens a little. No lift on hover. Jumps in whole pixels, like the buttons. */
+.work-tile.zoomable { user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.09s steps(2); }
+.work-tile.zoomable .work-face { transition: bottom 0.09s steps(2); }
+.work-face::after { content: ""; position: absolute; inset: 0; z-index: 0; background: rgba(21, 21, 31, 0); pointer-events: none; transition: background 0.09s steps(2); }
+.work-tile.zoomable:active { transform: translateY(var(--u)); transition-duration: 0.03s; }
+.work-tile.zoomable:active .work-face { bottom: calc(var(--u) * 2); transition-duration: 0.03s; }
+.work-tile.zoomable:active .work-face::after { background: rgba(21, 21, 31, 0.2); }
+/* Contact page: same white page as Work, with a short intro and one big row per link */
+.contact { padding-bottom: 5vw; }
+.contact-intro { max-width: 46vw; margin: 2.5vw 0 4vw; font-size: 1.35vw; font-weight: 500; line-height: 1.6; letter-spacing: 0.01em; }
+.contact-rows { list-style: none; margin: 0; padding: 0; }
+.contact-row {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2vw;
+  padding: 1.6vw 0 1.4vw;
+  color: inherit;
+  text-decoration: none;
+}
+/* stepped pixel rule above each row, like the one under the work headings */
+.contact-row::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 0.6vw;
+  background-image: linear-gradient(90deg, #000 50%, transparent 50%);
+  background-size: 1.2vw 100%;
+}
+.contact-rows li:last-child .contact-row::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 0.6vw;
+  background-image: linear-gradient(90deg, #000 50%, transparent 50%);
+  background-size: 1.2vw 100%;
+}
+.contact-row-label { font-size: 5vw; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.contact-row-note { font-size: 1.2vw; letter-spacing: 0.06em; text-align: right; }
+.contact-row:hover .contact-row-note, .contact-row:focus-visible .contact-row-note { color: var(--blue); }
+.contact-row:focus-visible { outline: none; }
+@media (max-aspect-ratio: 1/1) {
+  .contact-intro { max-width: 100%; font-size: 3.6vw; margin: 5vw 0 8vw; }
+  .contact-row { padding: 4vw 0 3.6vw; flex-direction: column; gap: 1.2vw; }
+  .contact-row::before, .contact-rows li:last-child .contact-row::after { height: 1.6vw; background-size: 3.2vw 100%; }
+  .contact-row-label { font-size: 12vw; }
+  .contact-row-note { font-size: 3vw; text-align: left; }
+}
+/* ---- Contact form: inputs share the buttons' pixel build (dark outline, stepped corners, pale face) ---- */
+.contact-form-wrap { margin-top: 5vw; max-width: 62vw; }
+.contact-form { display: grid; gap: 1.8vw; }
+.contact-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8vw; }
+.pix-field { display: grid; gap: 0.6vw; }
+.pix-field-label { font-family: "Minecraft", monospace; font-size: 1.1vw; letter-spacing: 0.08em; color: #55549a; }
+.pix-box {
+  --u: 0.2vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  display: block;
+  padding: var(--u);
+  background: #15151f; /* the outline */
+  clip-path: var(--notch);
+  transition: background 0.09s steps(2);
+}
+.pix-box:focus-within { background: var(--blue); }
+.pix-box input, .pix-box textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 1vw 1.2vw;
+  border: 0;
+  border-radius: 0;
+  background: #dedcf6;
+  box-shadow: inset 0 calc(var(--u) * -2) 0 #aeaade; /* the darker band along the bottom */
+  color: #15151f;
+  font: 500 1.3vw/1.5 "Montserrat", system-ui, sans-serif;
+  resize: vertical;
+  outline: none;
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+.pix-box textarea { min-height: 9vw; padding-bottom: 1.4vw; }
+.pix-box input:focus, .pix-box textarea:focus { background: #f4f3ff; }
+.pix-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.contact-form-actions { display: flex; align-items: center; gap: 2vw; }
+.pix-error { margin: 0; font-size: 1.1vw; font-weight: 700; color: var(--red); }
+/* the button element needs its browser styling cleared to look like the link version */
+button.pix-btn { border: 0; font: inherit; appearance: none; }
+button.pix-btn:disabled { opacity: 0.7; cursor: progress; }
+
+@media (max-aspect-ratio: 1/1) {
+  .contact-form-wrap { max-width: 100%; margin-top: 10vw; }
+  .contact-form { gap: 4vw; }
+  .contact-form-row { grid-template-columns: 1fr; gap: 4vw; }
+  .pix-field { gap: 1.4vw; }
+  .pix-field-label { font-size: 3vw; }
+  .pix-box { --u: 0.6vw; }
+  .pix-box input, .pix-box textarea { padding: 2.6vw 3vw; font-size: 3.6vw; }
+  .pix-box textarea { min-height: 28vw; }
+  .pix-error { font-size: 3vw; }
+}
+/* form errors: the field's outline turns red, a pixel "!" and a short message appear under it */
+.pix-box.invalid { background: var(--red-bright); animation: pix-shake 0.18s steps(1) 2; }
+.pix-box.invalid:focus-within { background: var(--red-bright); }
+.pix-field-error { display: flex; align-items: center; gap: 0.7vw; font-family: "Minecraft", monospace; font-size: 1.05vw; letter-spacing: 0.06em; color: var(--red); }
+.pix-bang {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6vw;
+  height: 1.6vw;
+  flex: none;
+  background: var(--red-bright);
+  color: #fff;
+  font: normal 1.1vw/1 "Minecraft", monospace;
+  clip-path: polygon(0.2vw 0, calc(100% - 0.2vw) 0, calc(100% - 0.2vw) 0.2vw, 100% 0.2vw, 100% calc(100% - 0.2vw), calc(100% - 0.2vw) calc(100% - 0.2vw), calc(100% - 0.2vw) 100%, 0.2vw 100%, 0.2vw calc(100% - 0.2vw), 0 calc(100% - 0.2vw), 0 0.2vw, 0.2vw 0.2vw);
+}
+@keyframes pix-shake { 0% { transform: translateX(-0.3vw); } 50% { transform: translateX(0.3vw); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pix-box.invalid { animation: none; } }
+@media (max-aspect-ratio: 1/1) {
+  .pix-field-error { font-size: 2.8vw; gap: 1.6vw; }
+  .pix-bang { width: 4vw; height: 4vw; font-size: 2.8vw; }
+}
+
+/* ---- "Sent" confirmation: a pixel card like the work cards (outline, stepped corners, periwinkle band at the base) ---- */
+/* full-screen "sent" animation: liquid rainbow blob, with a big green tick in the middle */
+.sent-ov { position: fixed; inset: 0; z-index: 200; overflow: hidden; --u: 0.5vw; }
+.sent-liquid { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+
+.pix-done {
+  --u: 0.25vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  position: relative;
+  isolation: isolate;
+  padding: var(--u) var(--u) calc(var(--u) * 4);
+  background: #15151f; /* the outline */
+  clip-path: var(--notch);
+}
+.pix-done::before { content: ""; position: absolute; inset: var(--u); z-index: -1; background: #aeaade; clip-path: var(--notch); }
+.pix-done-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+  padding: 3vw 3.4vw;
+  background: #dedcf6;
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+.pix-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 7vw;
+  height: 7vw;
+  background: #7dffb2;
+  border: var(--u) solid #15151f;
+  box-shadow: inset 0 calc(var(--u) * -2) 0 #4fd98a;
+}
+.pix-check svg { width: 62%; fill: #15151f; }
+.pix-done-body { display: grid; justify-items: start; gap: 0.8vw; }
+.pix-done-title { margin: 0; font-family: "NewPixel", serif; font-size: 4.6vw; line-height: 1; color: var(--blue); }
+.pix-done-text { margin: 0 0 0.8vw; font-size: 1.3vw; font-weight: 500; line-height: 1.5; color: #15151f; }
+@media (max-aspect-ratio: 1/1) {
+  .pix-pop, .pix-done { --u: 0.7vw; }
+  .pix-done-face { flex-direction: column; align-items: flex-start; gap: 4vw; padding: 6vw; }
+  .pix-check { width: 18vw; height: 18vw; }
+  .pix-done-title { font-size: 13vw; }
+  .pix-done-text { font-size: 3.6vw; }
+  .pix-done-body { gap: 2.4vw; }
+}
+/* ---- Home page, under About: services and the clients strip ---- */
+.home-more {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  color: #000;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  padding: 3vw 2.5vw 8vw;
+}
+.svc-wrap { margin-bottom: 9vw; }
+.svc-grid { list-style: none; margin: 2.4vw 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2vw; }
+.svc {
+  --u: 0.25vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  position: relative;
+  isolation: isolate;
+  padding: var(--u) var(--u) calc(var(--u) * 4);
+  background: #15151f; /* outline, like the work cards */
+  clip-path: var(--notch);
+}
+.svc::before { content: ""; position: absolute; inset: var(--u); z-index: -1; background: #aeaade; clip-path: var(--notch); }
+.svc-face {
+  position: relative;
+  height: 100%;
+  padding: 2.2vw 2vw 2.6vw;
+  background: #dedcf6;
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+.svc-num { display: block; font-family: "NewPixel", serif; font-weight: 400; font-size: 2.6vw; line-height: 1; color: var(--blue); }
+.svc-title { margin: 1.6vw 0 0.9vw; font-size: 2.6vw; letter-spacing: -0.03em; line-height: 1; }
+.svc-text { margin: 0; font-size: 1.1vw; font-weight: 500; line-height: 1.6; color: #15151f; }
+
+.clients-strip { display: flex; overflow: hidden; margin: 0 -2.5vw; } /* runs the full width of the screen, past the page's side padding */
+.clients-run { display: flex; flex: none; margin: 0; padding: 0; list-style: none; animation: clients-run 32s linear infinite; }
+/* each brand sits in a pixel box, built like the work cards: outline, stepped corners, periwinkle band along the base */
+.client {
+  --u: 0.25vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  box-sizing: border-box;
+  width: 17vw;
+  height: 8.5vw;
+  margin-right: 1.2vw;
+  padding: var(--u) var(--u) calc(var(--u) * 4);
+  background: #15151f;
+  clip-path: var(--notch);
+}
+.client::before { content: ""; position: absolute; inset: var(--u); z-index: -1; background: #aeaade; clip-path: var(--notch); }
+.client-face {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 1vw 1.6vw;
+  background: #fff;
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+.client-face { position: relative; overflow: hidden; }
+.client-face img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; box-sizing: border-box; padding: 1vw 1.6vw; object-fit: contain; user-select: none; } /* fills the face and scales the logo down to fit inside the padding, whatever its size */
+.client-face span { font-size: 1.6vw; letter-spacing: -0.02em; line-height: 1.1; text-align: center; }
+@keyframes clients-run { to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .clients-strip { overflow-x: auto; } .clients-run { animation: none; } }
+@media (max-aspect-ratio: 1/1) {
+  .home-more { padding: 6vw 5vw 14vw; }
+  .svc-wrap { margin-bottom: 16vw; }
+  .svc-grid { grid-template-columns: 1fr; gap: 3vw; margin-top: 5vw; }
+  .svc { --u: 0.7vw; }
+  .svc-face { padding: 6vw 5vw 7vw; }
+  .svc-num { font-size: 8vw; }
+  .svc-title { margin: 4vw 0 2.4vw; font-size: 8vw; }
+  .svc-text { font-size: 3.6vw; }
+  .clients-strip { margin: 0 -5vw; }
+  .client { --u: 0.7vw; width: 44vw; height: 22vw; margin-right: 3vw; }
+  .client-face { padding: 2.4vw 4vw; }
+  .client-face img { padding: 2.4vw 4vw; }
+  .client-face span { font-size: 4.6vw; }
+}
+
+/* ---- Footer, at the bottom of every page: a floating pixel card (outline, stepped corners, periwinkle band, like the work cards) ---- */
+.site-foot {
+  position: relative;
+  z-index: 2;
+  padding: 0 1.2vw 1.2vw;
+  background: transparent;
+  color: #fff;
+  font-family: "Gotham", "Gotham SSm", "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+}
+.site-foot-card {
+  --u: 0.3vw;
+  --notch: polygon(
+    var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u),
+    100% calc(100% - var(--u)), calc(100% - var(--u)) calc(100% - var(--u)), calc(100% - var(--u)) 100%,
+    var(--u) 100%, var(--u) calc(100% - var(--u)), 0 calc(100% - var(--u)), 0 var(--u), var(--u) var(--u)
+  );
+  position: relative;
+  isolation: isolate;
+  padding: var(--u) var(--u) calc(var(--u) * 4);
+  background: #15151f;
+  clip-path: var(--notch);
+}
+.site-foot-card::before { content: ""; position: absolute; inset: var(--u); z-index: -1; background: #aeaade; clip-path: var(--notch); }
+.site-foot-face {
+  position: relative;
+  overflow: hidden;
+  padding: 3vw 2.6vw 1.6vw;
+  background: var(--blue);
+  clip-path: polygon(var(--u) 0, calc(100% - var(--u)) 0, calc(100% - var(--u)) var(--u), 100% var(--u), 100% 100%, 0 100%, 0 var(--u), var(--u) var(--u));
+}
+.site-foot-top { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 3vw; align-items: start; }
+.site-foot-col { display: grid; justify-items: start; align-content: start; gap: 1.6vw; }
+.site-foot-col ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.7vw; }
+/* the small label chips above each column */
+.site-foot-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vw;
+  margin: 0;
+  padding: 0.32vw 0.9vw;
+  background: #eeeefb;
+  border: 0.15vw solid #15151f;
+  color: #15151f;
+  font-size: 0.8vw;
+  letter-spacing: 0.12em;
+}
+.site-foot-tag i { display: block; width: 0.6vw; height: 0.6vw; background: #1fbf6b; animation: foot-blink 1.2s steps(1) infinite; }
+@keyframes foot-blink { 50% { opacity: 0.25; } }
+.site-foot-title { margin: 0; font-family: "NewPixel", serif; font-weight: 400; font-size: 4.8vw; line-height: 1; }
+.site-foot-col a, .site-foot-bottom button { color: #fff; text-decoration: none; transition: color 0.09s steps(2); }
+.site-foot-col a { font-size: 2vw; letter-spacing: -0.02em; line-height: 1.1; }
+.site-foot-col a:hover, .site-foot-col a:focus-visible, .site-foot-bottom button:hover, .site-foot-bottom button:focus-visible { color: #aeaade; }
+
+/* the big wordmark, cropped by the bottom edge, with the stickers on it */
+.site-foot-art { position: relative; margin-top: 3vw; }
+.site-foot-mark { display: block; width: 100%; height: auto; filter: brightness(0) invert(1); opacity: 0.94; user-select: none; } /* shown whole, not cropped */
+.site-foot-sticker {
+  position: absolute;
+  width: var(--w);
+  transform: rotate(var(--r));
+  transition: transform 0.12s steps(2);
+  /* white outline in hard steps, then a dark hard shadow */
+  filter: drop-shadow(0.25vw 0 0 #fff) drop-shadow(-0.25vw 0 0 #fff) drop-shadow(0 0.25vw 0 #fff) drop-shadow(0 -0.25vw 0 #fff) drop-shadow(0.4vw 0.4vw 0 #15151f);
+}
+.site-foot-sticker:hover { transform: rotate(calc(var(--r) * -0.6)) translateY(-0.6vw); }
+.site-foot-sticker i {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--ar);
+  background: var(--c);
+  -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat;
+}
+
+/* a bar of rainbow squares, marching sideways one square at a time (the colours of the menu's blob) */
+.site-foot-bar {
+  height: 1vw;
+  width: 100%;
+  width: round(down, 100%, 1vw); /* a whole number of squares, so the last one is never cut off */
+  margin-top: 3vw;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 1' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%23ffe600'/%3E%3Crect x='1' width='1' height='1' fill='%23ff3ea5'/%3E%3Crect x='2' width='1' height='1' fill='%23b13cff'/%3E%3Crect x='3' width='1' height='1' fill='%232f6bff'/%3E%3Crect x='4' width='1' height='1' fill='%232ee6ff'/%3E%3Crect x='5' width='1' height='1' fill='%237dffb2'/%3E%3C/svg%3E") 0 0 / 6vw 100% repeat-x;
+  image-rendering: pixelated;
+  animation: foot-march 1.8s steps(6) infinite;
+}
+@keyframes foot-march { to { background-position-x: 6vw; } }
+.site-foot-bottom { display: flex; justify-content: space-between; align-items: baseline; gap: 2vw; margin-top: 1.4vw; font-size: 0.9vw; letter-spacing: 0.02em; }
+.site-foot-bottom p { margin: 0; opacity: 0.85; }
+.site-foot-bottom button { padding: 0; border: 0; background: none; font: inherit; letter-spacing: 0.16em; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .site-foot-bar, .site-foot-tag i, .site-foot-sticker { animation: none; transition: none; } }
+
+@media (max-aspect-ratio: 1/1) {
+  .site-foot { padding: 0 2.4vw 2.4vw; }
+  .site-foot-card { --u: 0.8vw; }
+  .site-foot-face { padding: 8vw 5vw 4vw; }
+  .site-foot-top { grid-template-columns: 1fr 1fr; gap: 8vw 5vw; }
+  .site-foot-main { grid-column: 1 / -1; gap: 4vw; }
+  .site-foot-col { gap: 3.4vw; }
+  .site-foot-col ul { gap: 2vw; }
+  .site-foot-tag { gap: 1.6vw; padding: 0.9vw 2.4vw; border-width: 0.5vw; font-size: 2.6vw; }
+  .site-foot-tag i { width: 1.8vw; height: 1.8vw; }
+  .site-foot-title { font-size: 15vw; }
+  .site-foot-col a { font-size: 5vw; }
+  .site-foot-art { margin-top: 9vw; }
+  .site-foot-sticker { width: calc(var(--w) * 2.2); filter: drop-shadow(0.6vw 0 0 #fff) drop-shadow(-0.6vw 0 0 #fff) drop-shadow(0 0.6vw 0 #fff) drop-shadow(0 -0.6vw 0 #fff) drop-shadow(1vw 1vw 0 #15151f); }
+  .site-foot-bar { height: 3vw; width: round(down, 100%, 3vw); margin-top: 4vw; background-size: 18vw 100%; animation-name: foot-march-p; }
+  @keyframes foot-march-p { to { background-position-x: 18vw; } }
+  .site-foot-bottom { margin-top: 4vw; font-size: 2.8vw; }
+}
+/* service cards: a light pale face with slanted shimmer stripes; on hover it takes a slight blue tint (in two hard steps, like the buttons) and the title melts into the pixel font */
+.svc-face { background: #eeeefb; transition: background-color 0.09s steps(2); }
+.svc:hover .svc-face { background: #cfdbfb; }
+.svc-glints { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+.svc-num, .svc-title, .svc-text { position: relative; } /* above the shimmer */
+@media (prefers-reduced-motion: reduce) { .svc-face { transition: none; } }
+/* the big logo and the floating shapes: both behind all page content; the shapes are above the logo */
+.bg-shapes { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; } /* later in the page than .bg-logo, so above it */
+.bg-logo { position: fixed; inset: 0; z-index: -1; display: grid; place-items: center; padding: 1vw; pointer-events: none; }
+
+.sent-runner { position: absolute; inset: 0; pointer-events: none; opacity: 0; transform: scale(0.55); transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2); } /* a soft pop in, with a little overshoot */
+.sent-runner.on { opacity: 1; transform: scale(1); }
+@media (prefers-reduced-motion: reduce) { .sent-runner { transition: none; } }

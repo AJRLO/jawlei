@@ -1,0 +1,278 @@
+{
+  "services": {
+    "label": "(WHAT I DO)",
+    "title": "Services",
+    "items": [
+      {
+        "title": "AVIS",
+        "text": "Profile pictures with a look of their own, made to be recognised at any size."
+      },
+      {
+        "title": "HEADERS",
+        "text": "Banners and covers that set the tone for a channel, a page or a brand."
+      },
+      {
+        "title": "THUMBNAILS",
+        "text": "Video covers designed to get the click and still look good once they do."
+      }
+    ]
+  },
+  "clients": {
+    "label": "(WORKED WITH)",
+    "items": [
+      {
+        "name": "CLIENT ONE",
+        "src": "/work/nytro-mwk89a72wvo.png"
+      },
+      {
+        "name": "CLIENT TWO",
+        "src": "/work/logo-2d-mwk89eqgmsw.png"
+      },
+      {
+        "name": "CLIENT THREE",
+        "src": "/work/ar-logo-mwk89mt2893.png"
+      },
+      {
+        "name": "CLIENT FOUR",
+        "src": "/work/swift-logo-mwk89w5xroe.png"
+      },
+      {
+        "name": "CLIENT SIX",
+        "src": "/work/radient-logo-black-mwk88laicyo.png"
+      }
+    ]
+  },
+  "home": {
+    "tagline": [
+      "CREATIVE DIRECTION",
+      "VISUAL EXPRESSION"
+    ],
+    "madeMeta": [
+      "MADE",
+      "2026"
+    ],
+    "footer": "PROPERTY JAWLEI 2026. All rights reserved.",
+    "footerTitle": "Got a project?",
+    "footerStatus": "AVAILABLE FOR NEW PROJECTS",
+    "ringText": "MY WORK",
+    "cards": [
+      {
+        "bg": "#ff3ea5",
+        "fg": "#ffffff",
+        "shape": "circle"
+      },
+      {
+        "bg": "#2f6bff",
+        "fg": "#ffe600",
+        "shape": "diamond"
+      },
+      {
+        "bg": "#ffe600",
+        "fg": "#0e3a8a",
+        "shape": "half"
+      },
+      {
+        "bg": "#7dffb2",
+        "fg": "#8a0e40",
+        "shape": "ring"
+      },
+      {
+        "bg": "#8a0e40",
+        "fg": "#ffb36b",
+        "shape": "stripes"
+      },
+      {
+        "bg": "#0e3a8a",
+        "fg": "#7de8ff",
+        "shape": "pixels"
+      },
+      {
+        "bg": "#ff9a3c",
+        "fg": "#111111",
+        "shape": "square",
+        "src": "/work/nytro-jawleireal-mwk3qmaef27.png"
+      },
+      {
+        "bg": "#b13cff",
+        "fg": "#ffe600",
+        "shape": "circle"
+      },
+      {
+        "bg": "#e8e8ec",
+        "fg": "#111111",
+        "shape": "ring"
+      },
+      {
+        "bg": "#111111",
+        "fg": "#ff3ea5",
+        "shape": "diamond"
+      }
+    ]
+  },
+  "about": {
+    "label": "(ABOUT ME)",
+    "firstName": "CHARLIE",
+    "lastName": "WHITAKER",
+    "meta": [
+      "18",
+      "NEW ZEALAND",
+      "DESIGNER"
+    ],
+    "paragraphs": [
+      "I'm a university student with a passion for creating *beautiful designs* and *interactive web experiences*. I love solving problems *creatively*, learning new technologies, and pushing the *boundaries* of what's possible.",
+      "My journey started young with *curiosity* about *design and code*. Today, I'm building *real projects*, collaborating with others, and growing *every single day*. Each project is a step forward in my *creative journey*."
+    ],
+    "contactLabel": "CONTACT ME",
+    "firstStyle": {
+      "font": "pixel",
+      "color": "#0e3a8a",
+      "size": 128
+    },
+    "lastStyle": {
+      "font": "sans",
+      "color": "#000000",
+      "size": 76
+    },
+    "nameOverlap": 70
+  },
+  "work": {
+    "label": "(SELECTED WORK)",
+    "title": "Work",
+    "sections": [
+      {
+        "id": "avis",
+        "title": "AVIS",
+        "note": "Profile pictures",
+        "ratio": "1 / 1",
+        "cols": 4,
+        "pieces": [
+          {
+            "bg": "#ff3ea5",
+            "fg": "#ffffff",
+            "src": "/work/pulse-nxcro-mwj1zrktv7u.png"
+          },
+          {
+            "bg": "#2f6bff",
+            "fg": "#ffe600"
+          },
+          {
+            "bg": "#ffe600",
+            "fg": "#0e3a8a"
+          },
+          {
+            "bg": "#7dffb2",
+            "fg": "#8a0e40"
+          },
+          {
+            "bg": "#8a0e40",
+            "fg": "#ffb36b"
+          },
+          {
+            "bg": "#0e3a8a",
+            "fg": "#7de8ff"
+          },
+          {
+            "bg": "#ff9a3c",
+            "fg": "#111111"
+          },
+          {
+            "bg": "#b13cff",
+            "fg": "#ffe600"
+          }
+        ]
+      },
+      {
+        "id": "headers",
+        "title": "HEADERS",
+        "note": "Banners and covers",
+        "ratio": "3 / 1",
+        "cols": 2,
+        "pieces": [
+          {
+            "bg": "#7dffb2",
+            "fg": "#8a0e40"
+          },
+          {
+            "bg": "#8a0e40",
+            "fg": "#ffb36b"
+          },
+          {
+            "bg": "#0e3a8a",
+            "fg": "#7de8ff"
+          },
+          {
+            "bg": "#ff9a3c",
+            "fg": "#111111"
+          },
+          {
+            "bg": "#b13cff",
+            "fg": "#ffe600"
+          },
+          {
+            "bg": "#e8e8ec",
+            "fg": "#111111"
+          }
+        ]
+      },
+      {
+        "id": "thumbnails",
+        "title": "THUMBNAILS",
+        "note": "Video covers",
+        "ratio": "16 / 9",
+        "cols": 3,
+        "pieces": [
+          {
+            "bg": "#0e3a8a",
+            "fg": "#7de8ff",
+            "src": "/work/shoyothumb2-mwj352s5g8q.png"
+          },
+          {
+            "bg": "#ff9a3c",
+            "fg": "#111111"
+          },
+          {
+            "bg": "#b13cff",
+            "fg": "#ffe600"
+          },
+          {
+            "bg": "#e8e8ec",
+            "fg": "#111111"
+          },
+          {
+            "bg": "#111111",
+            "fg": "#ff3ea5"
+          },
+          {
+            "bg": "#ff3ea5",
+            "fg": "#ffffff"
+          },
+          {
+            "bg": "#2f6bff",
+            "fg": "#ffe600"
+          },
+          {
+            "bg": "#ffe600",
+            "fg": "#0e3a8a"
+          },
+          {
+            "bg": "#7dffb2",
+            "fg": "#8a0e40"
+          }
+        ]
+      }
+    ],
+    "behanceLabel": "VIEW ALL WORK ON BEHANCE",
+    "behanceHref": "https://www.behance.net/jawlei"
+  },
+  "fonts": [],
+  "contact": {
+    "label": "(GET IN TOUCH)",
+    "title": "Contact",
+    "intro": "Have a project in mind, want something designed, or just want to say hi? Send me a message below and I'll get back to you.",
+    "email": "",
+    "links": [],
+    "formKey": "68577c76-7dab-4fc1-90bf-7340feadcbd0",
+    "formEndpoint": "https://api.web3forms.com/submit",
+    "formSubject": "New message from my website"
+  }
+}

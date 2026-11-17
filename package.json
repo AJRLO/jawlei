@@ -1,0 +1,51 @@
+{
+    "name":  "jawlei",
+    "private":  true,
+    "version":  "0.1.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+                    "build":  "tsc -b \u0026\u0026 vite build",
+                    "preview":  "vite preview",
+                    "typecheck":  "tsc -b --noEmit",
+                    "desktop:bundle":  "vite build -c electron/vite.renderer.config.ts \u0026\u0026 esbuild electron/main.ts electron/preload.ts --bundle --platform=node --format=cjs --external:electron --outdir=dist-electron --out-extension:.js=.cjs",
+                    "desktop":  "npm run desktop:bundle \u0026\u0026 electron .",
+                    "desktop:exe":  "npm run desktop:bundle \u0026\u0026 electron-builder"
+                },
+    "dependencies":  {
+                         "react":  "^19.0.0",
+                         "react-dom":  "^19.0.0"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^22.20.5",
+                            "@types/react":  "^19.0.0",
+                            "@types/react-dom":  "^19.0.0",
+                            "@vitejs/plugin-react":  "^5.0.0",
+                            "electron":  "^45.3.3",
+                            "electron-builder":  "^26.18.0",
+                            "esbuild":  "^0.28.2",
+                            "typescript":  "^5.6.0",
+                            "vite":  "^7.0.0"
+                        },
+    "main":  "dist-electron/main.cjs",
+    "description":  "Jawlei portfolio website and desktop admin",
+    "author":  "Jawlei",
+    "build":  {
+                  "appId":  "com.jawlei.admin",
+                  "productName":  "Jawlei Admin",
+                  "directories":  {
+                                      "output":  "release"
+                                  },
+                  "files":  [
+                                "dist-electron/**/*",
+                                "package.json"
+                            ],
+                  "win":  {
+                              "target":  [
+                                             "portable"
+                                         ],
+                              "signAndEditExecutable":  false
+                          },
+                  "artifactName":  "Jawlei-Admin.${ext}"
+              }
+}
