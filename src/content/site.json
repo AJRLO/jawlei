@@ -59,53 +59,62 @@
       {
         "bg": "#ff3ea5",
         "fg": "#ffffff",
-        "shape": "circle"
+        "shape": "circle",
+        "src": "/work/nytro-jawleireal-mwkkza7b99l.png"
       },
       {
         "bg": "#2f6bff",
         "fg": "#ffe600",
-        "shape": "diamond"
+        "shape": "diamond",
+        "src": "/work/blessedvfx-banner-mwkkzexuyzv.png"
       },
       {
         "bg": "#ffe600",
         "fg": "#0e3a8a",
-        "shape": "half"
+        "shape": "half",
+        "src": "/work/mashimemories2-mwkkzkxukek.png"
       },
       {
         "bg": "#7dffb2",
         "fg": "#8a0e40",
-        "shape": "ring"
+        "shape": "ring",
+        "src": "/work/nytrotacfizz-mwkkztoa9ta.png"
       },
       {
         "bg": "#8a0e40",
         "fg": "#ffb36b",
-        "shape": "stripes"
+        "shape": "stripes",
+        "src": "/work/xoxxly-banner-mwkkzyp6s5j.png"
       },
       {
         "bg": "#0e3a8a",
         "fg": "#7de8ff",
-        "shape": "pixels"
+        "shape": "pixels",
+        "src": "/work/mihthumber-mwkl042mhdk.png"
       },
       {
         "bg": "#ff9a3c",
         "fg": "#111111",
         "shape": "square",
-        "src": "/work/nytro-jawleireal-mwk3qmaef27.png"
+        "src": "/work/swift-jawlei-lead-mwkl09srjv8.png"
       },
       {
         "bg": "#b13cff",
         "fg": "#ffe600",
-        "shape": "circle"
+        "shape": "circle",
+        "src": "/work/legobannerjawlei-mwkl0dyetrl.png"
       },
       {
         "bg": "#e8e8ec",
         "fg": "#111111",
-        "shape": "ring"
+        "shape": "ring",
+        "src": "/work/kursemoments3-mwkl0ut725z.png"
       },
       {
         "bg": "#111111",
         "fg": "#ff3ea5",
-        "shape": "diamond"
+        "shape": "diamond",
+        "src": "/work/pulse-nxcro-mwkl15iy9uh.png"
       }
     ]
   },
