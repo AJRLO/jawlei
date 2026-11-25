@@ -171,9 +171,14 @@
             "src": "/work/pulse-nxcro-mwkk4m1rlat.png"
           },
           {
-            "bg": "#7dffb2",
-            "fg": "#8a0e40",
-            "src": "/work/rsavi-mwrc7atku9e.png"
+            "bg": "#e8e8ec",
+            "fg": "#111111",
+            "src": "/work/nixus-shay-mwvingd0869.png"
+          },
+          {
+            "bg": "#0e3a8a",
+            "fg": "#7de8ff",
+            "src": "/work/nytro-kujo-mwkk5l83sws.png"
           },
           {
             "bg": "#8a0e40",
@@ -181,9 +186,14 @@
             "src": "/work/swift-aztro-mwkk55vbsv8.png"
           },
           {
-            "bg": "#0e3a8a",
-            "fg": "#7de8ff",
-            "src": "/work/nytro-kujo-mwkk5l83sws.png"
+            "bg": "#e8e8ec",
+            "fg": "#111111",
+            "src": "/work/av8-jawlei-mwvinqua6s6.png"
+          },
+          {
+            "bg": "#7dffb2",
+            "fg": "#8a0e40",
+            "src": "/work/rsavi-mwrc7atku9e.png"
           },
           {
             "bg": "#ff9a3c",
@@ -194,6 +204,11 @@
             "bg": "#b13cff",
             "fg": "#ffe600",
             "src": "/work/swift-jawlei-lead-mwkk6jgo76y.png"
+          },
+          {
+            "bg": "#e8e8ec",
+            "fg": "#111111",
+            "src": "/work/nixus-lyquid-mwviny7disr.png"
           }
         ]
       },
